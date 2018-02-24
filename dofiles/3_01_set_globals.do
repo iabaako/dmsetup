@@ -73,6 +73,7 @@ gl var_team_id				""							// Team ID
 gl var_bcer_id				"VAR BC ID"					// Back Checker ID
 gl var_geo_cluster			"VAR GEO CLUSTER"			// Geographical Cluster 
 gl var_text_audit			"text_audit"				// Text Audit
+gl var_field_comments		"field_comments"			// Text Audit
 gl varl_keeplist_hfc		"VARL KEEPLIST HFC"			// Additional Variables to show in HFC
 gl varl_keeplist_bc			"VARL KEEPLIST BC"			// Additional Variables to show in BC
 
@@ -80,6 +81,7 @@ gl varl_keeplist_bc			"VARL KEEPLIST BC"			// Additional Variables to show in BC
 gl val_sample_size			VAL_SS				// Sample Size
 gl val_dk					VAL_DK				// Dont Know
 gl val_rf					VAL_RF				// Refuse to Answer
+gl val_na					VAL_NA				// Not Applicable
 gl val_osp					VAL_OSP				// Other Specify
 gl val_bc_perc				VAL_BC_PERC			// Percentage to Randomize for BC
 
