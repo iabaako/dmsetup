@@ -105,7 +105,7 @@ gl dir_preloads			../04_data_encrypted/01_preloads
 gl dir_survey			../04_data_encrypted/02_survey
 gl dir_bc				../04_data_encrypted/03_bc
 gl dir_mon				../04_data_encrypted/04_field_monitoring
-gl dir_hfc_repl			../04_data_encrypted/05_hfc_replacements
+gl dir_repl				../04_data_encrypted/05_replacements
 gl dir_clean			../04_data_encrypted/06_clean
 gl dir_data_no_pii		../05_data_no_pii
 gl dir_audio			../06_media_encrypted/01_audio
