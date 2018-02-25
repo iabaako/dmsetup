@@ -12,7 +12,7 @@ Ado(s)		:
 	* This folder should be in the IPA Ghana Central Backup folder
 -------------------------------------------------------------------------------	*/
 
-gl dir_backup ""
+gl dir_backup "ins_dir_backup"
 
 /* -----------------------------------------------------------------------------
 2.0 Global Files
@@ -21,9 +21,9 @@ gl dir_backup ""
 -------------------------------------------------------------------------------	*/
 
 * Excel Files
-gl xlsx_survey_xls			"XLSX SURVEY XLS"						// SurveyCTO programmed XLS form
-gl xlsx_mon_xls				"XLSX MON XLS"							// SurveyCTO programmed XLS form
-gl xlsx_bc_xls				"XLSX BC XLS"							// SurveyCTO programmed XLS form
+gl xlsx_survey_xls			"ins_xlsx_survey_xls"						// SurveyCTO programmed XLS form
+gl xlsx_mon_xls				"ins_xlsx_mon_xls"							// SurveyCTO programmed XLS form
+gl xlsx_bc_xls				"ins_xlsx_bc_xls"							// SurveyCTO programmed XLS form
 gl xlsx_hfc_inputs 			"hfc_inputs.xlsx"						// HFC inputs sheet
 gl xlsx_hfc_output 			"hfc_output.xlsx"						// HFC output sheet
 gl xlsx_hfc_enum_db			"hfc_enumerators.xlsx"					// HFC Enumerator Dashboard
@@ -51,11 +51,11 @@ gl do_randomize_bc			"7_01_randomize_bc.do"					// BC randomization do file
 gl do_compare_bc   		    "8_01_compare_bc.do"     				// BC comparison dofile
 
 * Dta files (Exclude .dta)
-gl dta_survey_raw			"DTA SURVEY RAW"						// Raw Survey Data 
+gl dta_survey_raw			"ins_dta_survey_raw"						// Raw Survey Data 
 gl dta_survey				""										// Prefix for edited survey datasets
-gl dta_bc_raw				"DTA BC RAW"							// Raw BC Data 
+gl dta_bc_raw				"ins_dta_bc_raw"							// Raw BC Data 
 gl dta_bc					""										// Prefix for edited bc datasets
-gl dta_mon_raw				"DTA MON RAW"							// Raw field monitoring data
+gl dta_mon_raw				"ins_dta_mon_raw"							// Raw field monitoring data
 gl dta_mon					""										// Prefix for edited monitoring data
 
 * Tracking Data (include extension ie. .xlsx, .dta)
@@ -67,26 +67,26 @@ gl tracking_data			""										// Master Tracking Data
 -------------------------------------------------------------------------------	*/
 
 * Variables
-gl var_survey_id			"VAR SURYEY ID"				// Specify Survey ID
-gl var_enum_id				"VAR ENUM ID"				// Enumerator ID
-gl var_team_id				""							// Team ID
-gl var_bcer_id				"VAR BC ID"					// Back Checker ID
-gl var_geo_cluster			"VAR GEO CLUSTER"			// Geographical Cluster 
-gl var_text_audit			"text_audit"				// Text Audit
-gl var_field_comments		"field_comments"			// Text Audit
-gl varl_keeplist_hfc		"VARL KEEPLIST HFC"			// Additional Variables to show in HFC
-gl varl_keeplist_bc			"VARL KEEPLIST BC"			// Additional Variables to show in BC
+gl var_survey_id			"ins_var_survey_id"				// Specify Survey ID
+gl var_enum_id				"ins_var_enum_id"				// Enumerator ID
+gl var_team_id				""								// Team ID
+gl var_bcer_id				"ins_var_bcer_id"				// Back Checker ID
+gl var_geo_cluster			"ins_var_geo_cluster"			// Geographical Cluster 
+gl var_text_audit			"text_audit"					// Text Audit
+gl var_field_comments		"field_comments"				// Field Comments
+gl varl_keeplist_hfc		"ins_varl_keeplist_hfc"			// Additional Variables to show in HFC
+gl varl_keeplist_bc			"ins_varl_keeplist_bc"			// Additional Variables to show in BC
 
 * Values
-gl val_sample_size			VAL_SS				// Sample Size
-gl val_dk					VAL_DK				// Dont Know
-gl val_rf					VAL_RF				// Refuse to Answer
-gl val_na					VAL_NA				// Not Applicable
-gl val_osp					VAL_OSP				// Other Specify
-gl val_bc_perc				VAL_BC_PERC			// Percentage to Randomize for BC
+gl val_sample_size			ins_val_ss				// Sample Size
+gl val_dk					ins_val_dk				// Dont Know
+gl val_rf					ins_val_rf  			// Refuse to Answer
+gl val_na					ins_val_na				// Not Applicable
+gl val_osp					ins_val_osp				// Other Specify
+gl val_bc_perc				ins_val_bc_perc			// Percentage to Randomize for BC
 
 * Text
-gl txt_scto_Server			"TXT SCTO SERVER"	// SCTO Server Name
+gl txt_scto_Server			"ins_txt_scto_server"	// SCTO Server Name
 
 /* -----------------------------------------------------------------------------
 4.0 Global Directories: DO NOT EDIT
