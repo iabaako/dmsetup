@@ -1,20 +1,29 @@
-*! Version 1.0.0 Ishmail Azindoo Baako (IPA) Dec 13, 2017
+*! Version 1.0.0 Ishmail Azindoo Baako (IPA) 24feb2018
 
-cap version 	15.1
+version 	13.0
 program define ipachecksetup
 	#d;
-	syntax 	using/, 
-			OUTput(string) 
-			[dontknow(real -999)
-			refusal(real -888)
-			specify(real -666)
-			TEMPLate(string) 
-			excluderepeats]
+	syntax 	,inpath(string) surveyxls(string) surveyid(name) enumid(name) geocluster(name)
+			[outpath(string) backuppath(string) outfile(string)]
+			[bcxls(string) monxls(string)]
+			[bcerid(string)]
+			[keephfc(string) keepbc(string)]
+			[server(string)]
+			[ss(integer 0) bcperc(integer 10) dk(real -999) ref(real -888) osp(real -666)	na(real -111)]
+			[excluderepeats] replace
 		;
 	#d cr
 
 	qui {
-	
+		* Check syntax: Check that outfile or outfile is specified
+		if "`outpath' `outfile'" == "" {
+			noi disp as err "must specify either outpath or outfile option"
+			err 198
+		}
+		else if "`outpath'" ~= "" & "`outfile'" ~= "" {
+			noi disp as err "options outpath and outfile are mutually exclusive"
+		}
+
 		* tempfiles
 		tempfile _choices _survey 
 		
@@ -22,66 +31,203 @@ program define ipachecksetup
 		cap confirm file "`using'"
 		if _rc == 601 {
 			noi disp "File `using' not found"
-			exit 601
-		}
-
-		* Download Input File
-		* Use template if option template is specified
-		if !missing("`template'") {
-			copy 	"`template'" "`output'", replace
+			err 601
 		}
 		
-		* If template is not specified, download template from IPA github repo
-		else {
-			* Download template if the user has internet connection
-			cap copy 																								///		
-				"https://raw.githubusercontent.com/PovertyAction/high-frequency-checks/master/xlsx/hfc_inputs.xlsx" ///
-				"`output'", replace
-			* Error if there is no internet connection
-			if _rc == 631 {
-				noi disp as error "Host not found: Check your internet connection or specify option template"
-				exit 631
+		* Setup folder structure. And set up outfile
+		if "`outpath'" ~= "" {
+			* Create folder structure 
+			* Create. Main folders must come befor subfolders
+			#d;
+			loc folders 
+				""00_archive"
+				"01_instruments"
+					"01_instruments/01_paper"
+					"01_instruments/02_scto_print"
+					"01_instruments/03_scto_xls"
+				"02_dofiles"
+					"02_dofiles/01_background"
+				"03_tools_logs"
+					"03_tools_logs/01_tools"
+					"03_tools_logs/02_outputs_encrypted"
+						"03_tools_logs/02_outputs_encrypted/01_hfcs"
+						"03_tools_logs/02_outputs_encrypted/02_bc_list"
+						"03_tools_logs/02_outputs_encrypted/03_bc_diffs"
+						"03_tools_logs/02_outputs_encrypted/04_monitoring"
+					"03_tools_logs/03_logs"
+				"04_data_encrypted"
+					"04_data_encrypted/01_preloads"
+					"04_data_encrypted/02_survey"
+					"04_data_encrypted/03_bc"
+					"04_data_encrypted/04_field_monitoring"
+					"04_data_encrypted/05_replacements"
+					"04_data_encrypted/06_clean"
+				"05_data_no_pii"
+				"06_media_encrypted"
+					"06_media_encrypted/01_audio"
+					"06_media_encrypted/02_pictures"
+					"06_media_encrypted/03_videos"
+				"07_documentation""
+				;
+			#d cr
+		
+			* Display message 
+			noi disp
+			noi disp "Settinp Up Folders ..."
+			noi disp
+
+			* Loop through each folder name, check if folder exist, create/skip and return message
+			foreach folder in `folders' {
+				* Check that folder already exist
+				cap confirm file "`outpath'/`folder'/nul"
+				* If folder exist, return message that folder already exist, else create folder
+				if !_rc {
+					noi disp "{red:Skipped}: Folder `folder' already exist"
+				}
+				* else create folder
+				else {
+					mkdir "`outpath'/`folder'"
+					noi disp "Successful: Folder `folder' created"
+				}
 			}
-		} 
+			
+			* download sample dofiles into various folders
+			* 3_01_set_globals
+			* import survey, bc and mon titles
+			import excel using "`inpath'/`surveyxls'", sheet("settings") firstrow clear
+			loc dtasurvey = form_title[1]
+			if "`bcxls'" ~= "" {
+				import excel using "`inpath'/`bcxls'", sheet("settings") firstrow clear
+				loc dtabc = form_title[1]
+			}
+			if "`monxls'" ~= "" {
+				import excel using "`inpath'/`monxls'", sheet("settings") firstrow clear
+				loc dtamon = form_title[1]
+			}
+			
+			* define replacements
+			#d;
+			loc pairs
+				""ins_dir_backup 			`backuppath'"
+				 "ins_xlsx_survey_xls		`surveyxls'"
+				 "ins_xlsx_mon_xls			`monxls'"
+				 "ins_xlsx_bc_xls			`bcxls'"
+				 "ins_dta_survey_raw		`dtasurvey'"
+				 "ins_dta_bc_raw			`dtabc'"
+				 "ins_dta_mon_raw			`dtamon'"
+				 "ins_var_survey_id			`surveyid'"
+				 "ins_var_enum_id			`enumid'"
+				 "ins_var_bcer_id			`bcerid'"
+				 "ins_var_geo_cluster		`geocluster'"
+				 "ins_varl_keeplist_hfc		`keephfc'"
+				 "ins_varl_keeplist_bc		`keepbc'"
+				 "ins_val_ss				`ss'"
+				 "ins_val_dk				`dk'"
+				 "ins_val_rf				`rf'"
+				 "ins_val_osp				`osp'"
+				 "ins_val_na				`na'"
+				 "ins_val_bc_perc			`bcperc'"
+				 "ins_txt_scto_server		`server'""
+				;
+			#d cr
+			
+			noi disp 
+			noi disp "{title:Copying sample files into folders ...}"
+			noi disp "{ul:from}" _column(30) "{ul:to}"
+
+			copy 																						///		
+				"https://raw.githubusercontent.com/iabaako/dmsetup/master/dofiles/3_01_set_globals.do"  ///
+				"`outpath'/02_dofiles/01_background/3_01_set_globals_tmp.do", replace
+
+			* Make replacements
+			foreach pair in `pairs' {
+				token `pair'
+				loc fromtxt 	"`1'"
+				macro shift
+				loc totxt 		"`*'"
+				
+				filefilter  "`outpath'/02_dofiles/01_background/3_01_set_globals_tmp.do"  	///
+							"`outpath'/02_dofiles/01_background/3_01_set_globals.do", 		///
+							from("`fromtxt'") to("`totxt'") replace
+							
+				copy "`outpath'/02_dofiles/01_background/3_01_set_globals.do" 				///
+					 "`outpath'/02_dofiles/01_background/3_01_set_globals_tmp.do", replace
+			}
+			
+			rm "`outpath'/02_dofiles/01_background/3_01_set_globals_tmp.do"
+			noi disp "3_01_set_globals.do" _column(30) "02_dofiles/01_background/3_01_set_globals.do"
+
+			#d;
+			loc dofiles 
+				"5_01_prepare_survey
+				 5_02_prepare_bc
+				 5_03_prepare_mon
+				 6_01_master_check
+				 6_e1_psemail_profile
+				 7_01_randomize_bc
+				 8_01_compare_bc"
+				;
+			#d cr
+			
+			foreach do in `dofiles' {
+				copy 																			///		
+					"https://raw.githubusercontent.com/iabaako/dmsetup/master/dofiles/`do'.do"  ///
+					"`outpath'/02_dofiles/01_background/`do'.do", replace
+					noi disp "`do'.do" _column(30) "02_dofiles/01_background/`do'.do"
+			}
+			
+			copy 																				  ///		
+				"https://raw.githubusercontent.com/iabaako/dmsetup/master/dofiles/master_run.do"  ///
+				"`outpath'/02_dofiles/master_run.do", replace
+				noi disp "master_run.do" _column(30) "02_dofiles/master_run.do"
+
+			copy 																					 ///		
+				"https://raw.githubusercontent.com/iabaako/dmsetup/master/xlsx/hfc_enumerators.xlsx" ///
+				"`outpath'/03_tools_logs/01_tools/hfc_enumerators.xlsx", replace
+				noi disp "hfc_enumerators.xlsx" _column(30) "03_tools_logs/01_tools/hfc_enumerators.xlsx"
+			
+			copy 																					///		
+				"https://raw.githubusercontent.com/iabaako/dmsetup/master/xlsx/hfc_text_audit.xlsx" ///
+				"`outpath'/03_tools_logs/01_tools/hfc_text_audit.xlsx", replace
+				noi disp "hfc_text_audit.xlsx" _column(30) "03_tools_logs/01_tools/hfc_text_audit.xlsx"
+
+			copy 																					  ///		
+				"https://raw.githubusercontent.com/iabaako/dmsetup/master/xlsx/hfc_replacements.xlsx" ///
+				"`outpath'/04_data_encrypted/05_replacements/hfc_replacements.xlsx", replace
+				noi disp "hfc_replacements.xlsx" _column(30) "04_data_encrypted/05_replacements/hfc_replacements.xlsx"
+		} 		
 
 		noi disp
 		noi disp "Prefilling HFC Inputs ..."
 		
-		* 0. setup
-			putexcel 	set "`output'", sheet("0. setup") modify
-			putexcel 	B5 	= ("`output'") 					///
-						B13	= ("submisssiondate")			///
-						B16 = ("formdef_version")		
-			
-			putexcel	B6 	= ("PATH/hfc_output.xlsx") 		///
-						B7 	= ("PATH/hfc_enumerators.xlsx")	///
-						, font(calibri, 11, red)			
-
-			noi disp "... 0. setup complete"
-			
-			putexcel clear
-			
+		copy 																				///		
+			"https://raw.githubusercontent.com/iabaako/dmsetup/master/xlsx/hfc_inputs.xlsx" ///
+			"`outpath'/03_tools_logs/01_tools/hfc_inputs.xlsx", replace
+		
+		loc output "`outpath'/03_tools_logs/01_tools/hfc_inputs.xlsx"
+		loc using  "`inpath'/`surveyxls'"
+					
 		* 2. duplicates
 			* export key and a global for survey key into duplicates sheet
 			putexcel 	set "`output'", sheet("2. duplicates") modify
-			putexcel 	A2 = (char(36) + "{id}") A3 = ("key")
+			putexcel 	A2 = (char(36) + "{id}")
 				
 			noi disp "... 2. duplicates complete"
-		
+
 		* 04. no miss
-		* Import inputs sheet
+		* Import choices sheet from xls form
 		import excel using "`using'", sheet("choices") first allstr clear
 			drop if missing(value) 
 		* save choices
 		save `_choices', replace
 
-		* Import inputs sheet
+		* Import survey sheet of xls form
 		import excel using "`using'", sheet("survey") first allstr clear
 			gen row = _n
 			drop if missing(type) | regexm(disabled, "[Yy][Es][Ss]")
 		* save dta copy
 		save `_survey', replace
-
+		
 		* Find variables to be added to no miss
 		drop if inlist(type, "deviceid", "subscriberid", "simserial", "phonenumber", "username", "caseid")
 		* drop all variables in groups and repeats that have relevance expressions
@@ -235,7 +381,7 @@ program define ipachecksetup
 		use `_survey', clear
 		keep type name relevance		
 			* keep only fields with conatraints. Exclude groups and repeats
-			keep if regexm(relevance, "`specify'") & !regexm(type, "begin") & type == "text"
+			keep if regexm(relevance, "`osp'") & !regexm(type, "begin") & type == "text"
 			if `=_N' > 0 {
 				* rename name child and keep only needed variables
 				ren (name) (child)
@@ -295,6 +441,11 @@ program define ipachecksetup
 			export excel name using "`output'", sheet("enumdb") sheetmodify cell(B2)
 			noi disp "... enumdb complete"
 			
+		* text audit
+		use `_survey', clear
+		keep if inlist(type, "begin group", "begin repeat")
+		export excel name using "`output'", sheet("text audit") sheetmodify cell(A2)
+			noi disp "... text audit complete"
 	}
 
 end
